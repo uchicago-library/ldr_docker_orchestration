@@ -1,0 +1,55 @@
+version: '2'
+services:
+    premiser:
+        build:
+            context: ./PREMISer/
+            args:
+                PORT: "8910"
+        expose:
+            - "8910"
+    materialsuite_endpoint:
+        build:
+            context: ./ldr_materialsuite_endpoint/
+            args:
+                PORT: "8911"
+        expose:
+            - "8911"
+        ports:
+            - "${MATERIALSUITE_EXTERNAL_PORT}:8911"
+        environment:
+             - MATERIALSUITE_ENDPOINT_CONFIG=/code/config.py
+        volumes:
+            - ${LTS_PATH}:/lts 
+            - ${PREMIS_PATH}:/premis
+    idnest:
+        build:
+            context: ./idnest/
+            args:
+                PORT: "8912"
+        expose:
+            - "8912"
+        ports:
+            - "${ACCS_EXTERNAL_PORT}:8912"
+        depends_on:
+            - mongo
+        environment:
+            - IDNEST_CONFIG=/code/config.py
+    ingress:
+        build:
+            context: ./ldr_ingress/
+            args:
+                PORT: "8913"
+        ports:
+            - "${INGRESS_EXTERNAL_PORT}:8913"
+        depends_on:
+            - idnest
+            - premiser
+            - materialsuite_endpoint
+        environment:
+            - INGRESS_CONFIG=/code/config.py
+    mongo:
+        image: "mongo"
+        expose:
+            - "27017"
+        volumes:
+            - ${DB_PATH}:/data/db
