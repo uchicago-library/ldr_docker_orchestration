@@ -7,6 +7,8 @@ services:
                 PORT: "8910"
         expose:
             - "8910"
+        environment:
+             - PREMISER_CONFIG=/code/config.py
     premiser:
         build:
             context: ./premiser_loadbalancer/

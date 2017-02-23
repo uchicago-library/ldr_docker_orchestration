@@ -5,3 +5,4 @@ git clone git@github.com:uchicago-library/idnest.git && \
 git clone git@github.com:uchicago-library/ldr_materialsuite_endpoint.git && \
     cp ./configs/materialsuite_endpoint_conf.py ldr_materialsuite_endpoint/config.py
 git clone git@github.com:uchicago-library/PREMISer.git
+    cp ./configs/premiser_conf.py PREMISer/config.py
