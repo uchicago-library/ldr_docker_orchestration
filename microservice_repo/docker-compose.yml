@@ -79,3 +79,13 @@ services:
             - "27017"
         volumes:
             - ${DB_PATH}:/data/db
+    unifier:
+        build:
+            context: ./unifier/
+        ports: 
+            - "${UNIFIER_EXTERNAL_PORT}:8888"
+        depends_on:
+            - idnest
+            - ingress
+            - materialsuite_endpoint
+            - premiser
