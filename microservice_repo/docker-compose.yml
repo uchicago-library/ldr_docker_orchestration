@@ -33,8 +33,6 @@ services:
             context: ./materialsuite_endpoint_loadbalancer/
         expose:
             - "8911"
-        ports:
-            - "${MATERIALSUITE_EXTERNAL_PORT}:8911"
     bidnest:
         build:
             context: ./idnest/
@@ -51,8 +49,6 @@ services:
             context: ./idnest_loadbalancer/
         expose:
             - "8912"
-        ports:
-            - "${ACCS_EXTERNAL_PORT}:8912"
         depends_on:
             - bidnest
     bingress:
@@ -69,8 +65,6 @@ services:
     ingress:
         build: 
             context: ./ingress_loadbalancer/
-        ports:
-            - "${INGRESS_EXTERNAL_PORT}:8080"
         depends_on:
             - bingress
     mongo:
@@ -79,3 +73,22 @@ services:
             - "27017"
         volumes:
             - ${DB_PATH}:/data/db
+    bunifier:
+        build:
+            context: ./unifier/
+        expose: 
+            - "8888"
+        depends_on:
+            - idnest
+            - ingress
+            - materialsuite_endpoint
+            - premiser
+    unifier:
+        build:
+            context: ./unifier_loadbalancer/
+        expose:
+            - "8888"
+        ports: 
+            - "${UNIFIER_EXTERNAL_PORT}:8888"
+        depends_on:
+            - bunifier
