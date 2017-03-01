@@ -5,13 +5,21 @@ services:
             context: ./PREMISer/
             args:
                 PORT: "8910"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         expose:
             - "8910"
         environment:
              - PREMISER_CONFIG=/code/config.py
     premiser:
         build:
-            context: ./premiser_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bpremiser:8910"
+                LISTEN: "8910"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         expose:
             - "8910"
         depends_on:
@@ -21,6 +29,8 @@ services:
             context: ./ldr_materialsuite_endpoint/
             args:
                 PORT: "8911"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         expose:
             - "8911"
         environment:
@@ -30,7 +40,13 @@ services:
             - ${PREMIS_PATH}:/premis
     materialsuite_endpoint:
         build:
-            context: ./materialsuite_endpoint_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bmaterialsuite_endpoint:8911"
+                LISTEN: "8911"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         expose:
             - "8911"
     bidnest:
@@ -38,6 +54,8 @@ services:
             context: ./idnest/
             args:
                 PORT: "8912"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "30"
         expose:
             - "8912"
         depends_on:
@@ -46,7 +64,13 @@ services:
             - IDNEST_CONFIG=/code/config.py
     idnest:
         build:
-            context: ./idnest_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bidnest:8912"
+                LISTEN: "8912"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         expose:
             - "8912"
         depends_on:
@@ -56,6 +80,8 @@ services:
             context: ./ldr_ingress/
             args:
                 PORT: "8913"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         depends_on:
             - idnest
             - premiser
@@ -64,7 +90,13 @@ services:
             - INGRESS_CONFIG=/code/config.py
     ingress:
         build: 
-            context: ./ingress_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bingress:8913"
+                LISTEN: "8913"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - bingress
     mongo:
