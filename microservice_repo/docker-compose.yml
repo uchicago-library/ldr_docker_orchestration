@@ -99,7 +99,7 @@ services:
                 INGRESS_INTERNAL_PORT: "${INGRESS_INTERNAL_PORT}"
                 PREMISER_INTERNAL_PORT: "${PREMISER_INTERNAL_PORT}"
                 MATERIALSUITE_ENDPOINT_INTERNAL_PORT: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
-                LISTEN: "${UNIFIER_EXTERNAL_PORT}"
+                LISTEN: "${UNIFIER_INTERNAL_PORT}"
                 REFRESH: "${REFRESH}"
                 TIMEOUT: "${TIMEOUT}"
                 MAX_FSIZE: "${MAX_FSIZE}"
@@ -110,8 +110,14 @@ services:
             - premiser
     unifier:
         build:
-            context: ./unifier_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bunifier:${UNIFIER_INTERNAL_PORT}"
+                LISTEN: "${UNIFIER_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         ports: 
-            - "${UNIFIER_EXTERNAL_PORT}:8888"
+            - "${UNIFIER_EXTERNAL_PORT}:${UNIFIER_INTERNAL_PORT}"
         depends_on:
             - bunifier
