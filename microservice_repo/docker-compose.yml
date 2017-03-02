@@ -4,7 +4,7 @@ services:
         build:
             context: ./PREMISer/
             args:
-                PORT: "8910"
+                PORT: "${PREMISER_INTERNAL_PORT}"
                 WORKERS: "${NUM_WORKERS}"
                 TIMEOUT: "${TIMEOUT}"
         environment:
@@ -13,8 +13,8 @@ services:
         build:
             context: ./loadbalancer/
             args:
-                UPSTREAM: "http://bpremiser:8910"
-                LISTEN: "8910"
+                UPSTREAM: "http://bpremiser:${PREMISER_INTERNAL_PORT}"
+                LISTEN: "${PREMISER_INTERNAL_PORT}"
                 REFRESH: "${REFRESH}"
                 TIMEOUT: "${TIMEOUT}"
                 MAX_FSIZE: "${MAX_FSIZE}"
@@ -24,7 +24,7 @@ services:
         build:
             context: ./ldr_materialsuite_endpoint/
             args:
-                PORT: "8911"
+                PORT: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
                 WORKERS: "${NUM_WORKERS}"
                 TIMEOUT: "${TIMEOUT}"
         environment:
@@ -36,8 +36,8 @@ services:
         build:
             context: ./loadbalancer/
             args:
-                UPSTREAM: "http://bmaterialsuite_endpoint:8911"
-                LISTEN: "8911"
+                UPSTREAM: "http://bmaterialsuite_endpoint:${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                LISTEN: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
                 REFRESH: "${REFRESH}"
                 TIMEOUT: "${TIMEOUT}"
                 MAX_FSIZE: "${MAX_FSIZE}"
@@ -45,7 +45,7 @@ services:
         build:
             context: ./idnest/
             args:
-                PORT: "8912"
+                PORT: "${IDNEST_INTERNAL_PORT}"
                 WORKERS: "${NUM_WORKERS}"
                 TIMEOUT: "30"
         depends_on:
@@ -56,8 +56,8 @@ services:
         build:
             context: ./loadbalancer/
             args:
-                UPSTREAM: "http://bidnest:8912"
-                LISTEN: "8912"
+                UPSTREAM: "http://bidnest:${IDNEST_INTERNAL_PORT}"
+                LISTEN: "${IDNEST_INTERNAL_PORT}"
                 REFRESH: "${REFRESH}"
                 TIMEOUT: "${TIMEOUT}"
                 MAX_FSIZE: "${MAX_FSIZE}"
@@ -67,7 +67,7 @@ services:
         build:
             context: ./ldr_ingress/
             args:
-                PORT: "8913"
+                PORT: "${INGRESS_INTERNAL_PORT}"
                 WORKERS: "${NUM_WORKERS}"
                 TIMEOUT: "${TIMEOUT}"
         depends_on:
@@ -80,8 +80,8 @@ services:
         build: 
             context: ./loadbalancer/
             args:
-                UPSTREAM: "http://bingress:8913"
-                LISTEN: "8913"
+                UPSTREAM: "http://bingress:${INGRESS_INTERNAL_PORT}"
+                LISTEN: "${INGRESS_INTERNAL_PORT}"
                 REFRESH: "${REFRESH}"
                 TIMEOUT: "${TIMEOUT}"
                 MAX_FSIZE: "${MAX_FSIZE}"
@@ -94,6 +94,15 @@ services:
     bunifier:
         build:
             context: ./unifier/
+            args:
+                IDNEST_INTERNAL_PORT: "${IDNEST_INTERNAL_PORT}"
+                INGRESS_INTERNAL_PORT: "${INGRESS_INTERNAL_PORT}"
+                PREMISER_INTERNAL_PORT: "${PREMISER_INTERNAL_PORT}"
+                MATERIALSUITE_ENDPOINT_INTERNAL_PORT: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                LISTEN: "${UNIFIER_EXTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - idnest
             - ingress
@@ -102,8 +111,6 @@ services:
     unifier:
         build:
             context: ./unifier_loadbalancer/
-        expose:
-            - "8888"
         ports: 
             - "${UNIFIER_EXTERNAL_PORT}:8888"
         depends_on:
