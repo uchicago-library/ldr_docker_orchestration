@@ -1,0 +1,4 @@
+PREMIS_ENDPOINT = "http://premiser:8901/"
+MATERIALSUITE_ENDPOINT = "http://materialsuite_endpoint:8902/add"
+ACCS_ENDPOINT = "http://idnest:8903/"
+VERBOSITY = "INFO"

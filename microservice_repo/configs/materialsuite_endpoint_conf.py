@@ -1,3 +1,0 @@
-LTS_PATH = "/lts"
-PREMIS_PATH = "/premis"
-BUFF = 1024*1000*8

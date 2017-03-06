@@ -1,6 +1,6 @@
 To Setup Up:
 ```
-$ sh setup.sh
+$ bash setup.sh
 ```
 
 To run
@@ -24,26 +24,25 @@ Operation can be customized via setting the appropriate environment variables be
 
 OPTIONS
 
-INGRESS_EXTERNAL_PORT
+UNIFIER_EXTERNAL_PORT
 
-The port on the host that the ingress service listens on.
+The port for the unifier load balancer to listen on (the port everything will be accessible to from the outside world)
 
-ACCS_EXTERNAL_PORT
-
-The port on the host that the idnest service for accessions listens on.
-
-MATERIALSUITE_EXTERNAL_PORT
-
-The port on the host that the materialsuite endpoint service listens on
-
-LTS_PATH
-
-The path on the host to bind inside of the container to serve as the long term storage environment
-
-PREMIS_PATH
-
-The path on the host to bind inside of the container to serve as the live premis environment
 
 DB_PATH
 
-The path on the host to bind inside of the container to hold the mongodb which powers the idnest
+The path on the host to bind inside of the container to hold the mongodb
+
+
+REFRESH
+
+How often for the DNS records/caches in the load balancers to update
+
+TIMEOUT
+
+How long (in seconds) for the load balancers, webservers, and gunicorn instances to allow any single connection to remain open for
+
+
+MAX_FSIZE
+
+The maximum file size

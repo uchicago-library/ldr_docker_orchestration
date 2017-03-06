@@ -4,58 +4,69 @@ services:
         build:
             context: ./PREMISer/
             args:
-                PORT: "8910"
-        expose:
-            - "8910"
+                PORT: "${PREMISER_INTERNAL_PORT}"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         environment:
              - PREMISER_CONFIG=/code/config.py
     premiser:
         build:
-            context: ./premiser_loadbalancer/
-        expose:
-            - "8910"
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bpremiser:${PREMISER_INTERNAL_PORT}"
+                LISTEN: "${PREMISER_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - bpremiser 
     bmaterialsuite_endpoint:
         build:
             context: ./ldr_materialsuite_endpoint/
             args:
-                PORT: "8911"
-        expose:
-            - "8911"
+                PORT: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         environment:
              - MATERIALSUITE_ENDPOINT_CONFIG=/code/config.py
-        volumes:
-            - ${LTS_PATH}:/lts 
-            - ${PREMIS_PATH}:/premis
     materialsuite_endpoint:
         build:
-            context: ./materialsuite_endpoint_loadbalancer/
-        expose:
-            - "8911"
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bmaterialsuite_endpoint:${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                LISTEN: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
     bidnest:
         build:
             context: ./idnest/
             args:
-                PORT: "8912"
-        expose:
-            - "8912"
+                PORT: "${IDNEST_INTERNAL_PORT}"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "30"
         depends_on:
             - mongo
         environment:
             - IDNEST_CONFIG=/code/config.py
     idnest:
         build:
-            context: ./idnest_loadbalancer/
-        expose:
-            - "8912"
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bidnest:${IDNEST_INTERNAL_PORT}"
+                LISTEN: "${IDNEST_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - bidnest
     bingress:
         build:
             context: ./ldr_ingress/
             args:
-                PORT: "8913"
+                PORT: "${INGRESS_INTERNAL_PORT}"
+                WORKERS: "${NUM_WORKERS}"
+                TIMEOUT: "${TIMEOUT}"
         depends_on:
             - idnest
             - premiser
@@ -64,31 +75,67 @@ services:
             - INGRESS_CONFIG=/code/config.py
     ingress:
         build: 
-            context: ./ingress_loadbalancer/
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bingress:${INGRESS_INTERNAL_PORT}"
+                LISTEN: "${INGRESS_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - bingress
     mongo:
         image: "mongo"
-        expose:
-            - "27017"
         volumes:
             - ${DB_PATH}:/data/db
     bunifier:
         build:
             context: ./unifier/
-        expose: 
-            - "8888"
+            args:
+                IDNEST_INTERNAL_PORT: "${IDNEST_INTERNAL_PORT}"
+                INGRESS_INTERNAL_PORT: "${INGRESS_INTERNAL_PORT}"
+                PREMISER_INTERNAL_PORT: "${PREMISER_INTERNAL_PORT}"
+                MATERIALSUITE_ENDPOINT_INTERNAL_PORT: "${MATERIALSUITE_ENDPOINT_INTERNAL_PORT}"
+                ACQ_INTERFACE_INTERNAL_PORT: "${ACQ_INTERFACE_INTERNAL_PORT}"
+                LISTEN: "${UNIFIER_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         depends_on:
             - idnest
             - ingress
             - materialsuite_endpoint
             - premiser
+            - acq_interface
     unifier:
         build:
-            context: ./unifier_loadbalancer/
-        expose:
-            - "8888"
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bunifier:${UNIFIER_INTERNAL_PORT}"
+                LISTEN: "${UNIFIER_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
         ports: 
-            - "${UNIFIER_EXTERNAL_PORT}:8888"
+            - "${UNIFIER_EXTERNAL_PORT}:${UNIFIER_INTERNAL_PORT}"
         depends_on:
             - bunifier
+    bacq_interface:
+        build:
+            context: ./ldracquisitions_interface/
+            args:
+                LISTEN: "${ACQ_INTERFACE_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
+    acq_interface:
+        build: 
+            context: ./loadbalancer/
+            args:
+                UPSTREAM: "http://bacq_interface:${ACQ_INTERFACE_INTERNAL_PORT}"
+                LISTEN: "${ACQ_INTERFACE_INTERNAL_PORT}"
+                REFRESH: "${REFRESH}"
+                TIMEOUT: "${TIMEOUT}"
+                MAX_FSIZE: "${MAX_FSIZE}"
+        depends_on:
+            - bacq_interface
