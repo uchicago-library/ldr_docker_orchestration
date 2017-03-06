@@ -29,9 +29,6 @@ services:
                 TIMEOUT: "${TIMEOUT}"
         environment:
              - MATERIALSUITE_ENDPOINT_CONFIG=/code/config.py
-        volumes:
-            - ${LTS_PATH}:/lts 
-            - ${PREMIS_PATH}:/premis
     materialsuite_endpoint:
         build:
             context: ./loadbalancer/
